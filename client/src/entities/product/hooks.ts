@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsApi } from "./api";
-import type { Product, ProductListParams } from "../../shared/api/types";
+import type { Product, ProductListParams } from "@/shared/api/types";
 
 export const useProducts = (params?: ProductListParams) =>
   useQuery<{ items: Product[]; total: number; page: number; limit: number }>({

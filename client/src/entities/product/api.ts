@@ -1,9 +1,9 @@
-import { api } from "../../shared/lib/apiClient";
+import { api } from "@/shared/lib/apiClient";
 import type {
   Product,
   ListResponse,
   ProductListParams,
-} from "../../shared/api/types";
+} from "@/shared/api/types";
 
 export const productsApi = {
   list: (params: ProductListParams) =>

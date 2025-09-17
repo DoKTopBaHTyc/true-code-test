@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createProductSchema } from "../../products/dto";
-import { api, buildUploadUrl } from "../../shared/lib/apiClient";
+import { createProductSchema } from "@/products/dto";
+import { api, buildUploadUrl } from "@/shared/lib/apiClient";
+import { Button } from "@/shared/ui";
 import type { z } from "zod";
-import {
-  TextInput,
-  NumberInput,
-  Button,
-  Textarea,
-  FileInput,
-  Group,
-  Image,
-} from "@mantine/core";
-import {
-  useCreateProduct,
-  useUpdateProduct,
-} from "../../entities/product/hooks";
-import type { Product } from "../../shared/api/types";
+import { useCreateProduct, useUpdateProduct } from "@/entities/product/hooks";
+import type { Product } from "@/shared/api/types";
+import { useNavigate } from "react-router-dom";
 
 type ProductFormProps = {
   product?: Product;
@@ -30,6 +20,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 }) => {
   const isEdit = !!product;
   const [file, setFile] = useState<File | null>(null);
+  const navigate = useNavigate();
 
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
@@ -68,6 +59,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
 
       onSuccess?.(result);
+      navigate("/");
     } catch (err) {
       console.error(err);
     }
@@ -76,98 +68,118 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      style={{ maxWidth: 400, margin: "0 auto" }}
+      className="max-w-md mx-auto space-y-4"
     >
       <Controller
         name="title"
         control={control}
-        render={({ field }) => <TextInput label="Title" {...field} required />}
+        render={({ field }) => (
+          <input
+            {...field}
+            type="text"
+            placeholder="Название товара"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        )}
       />
+
       <Controller
         name="description"
         control={control}
-        render={({ field }) => <Textarea label="Description" {...field} />}
+        render={({ field }) => (
+          <textarea
+            {...field}
+            placeholder="Описание"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        )}
       />
+
       <Controller
         name="price"
         control={control}
         render={({ field }) => (
-          <NumberInput
-            label="Price"
+          <input
+            type="number"
             min={0}
-            required
-            value={
-              typeof field.value === "number"
-                ? field.value
-                : field.value === undefined ||
-                    field.value === null ||
-                    field.value === ""
-                  ? undefined
-                  : Number(field.value)
+            placeholder="Цена"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            value={field.value as number | ""}
+            onChange={(e) =>
+              field.onChange(
+                e.target.value === "" ? undefined : Number(e.target.value)
+              )
             }
-            onChange={(val) => field.onChange(val === "" ? undefined : val)}
-            onBlur={field.onBlur}
-            name={field.name}
-            ref={field.ref}
+            required
           />
         )}
       />
+
       <Controller
         name="discountedPrice"
         control={control}
         render={({ field }) => (
-          <NumberInput
-            label="Discounted Price"
+          <input
+            type="number"
             min={0}
-            value={
-              typeof field.value === "number"
-                ? field.value
-                : field.value === undefined ||
-                    field.value === null ||
-                    field.value === ""
-                  ? undefined
-                  : Number(field.value)
+            placeholder="Цена со скидкой"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            value={field.value as number | ""}
+            onChange={(e) =>
+              field.onChange(
+                e.target.value === "" ? undefined : Number(e.target.value)
+              )
             }
-            onChange={(val) => field.onChange(val === "" ? undefined : val)}
-            onBlur={field.onBlur}
-            name={field.name}
-            ref={field.ref}
           />
         )}
       />
+
       <Controller
         name="sku"
         control={control}
-        render={({ field }) => <TextInput label="SKU" {...field} required />}
+        render={({ field }) => (
+          <input
+            {...field}
+            type="text"
+            placeholder="Артикул (SKU)"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        )}
       />
-      <FileInput
-        label="Photo"
-        placeholder="Select image"
-        accept="image/*"
-        value={file}
-        onChange={setFile}
-      />
-      {file && (
-        <Image
-          src={URL.createObjectURL(file)}
-          alt="preview"
-          width={200}
-          height={200}
-          mt="sm"
+
+      <div>
+        <label className="block mb-1 font-medium">Фото товара</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="w-full"
         />
-      )}
-      {product?.photoPath && !file && (
-        <Image
-          src={buildUploadUrl(product.photoPath)}
-          alt="current"
-          width={200}
-          height={200}
-          mt="sm"
-        />
-      )}
-      <Group mt="md">
-        <Button type="submit">{isEdit ? "Update" : "Create"}</Button>
-      </Group>
+        {file && (
+          <img
+            src={URL.createObjectURL(file)}
+            alt="preview"
+            className="mt-2 w-48 h-48 object-cover rounded-lg"
+          />
+        )}
+        {!file && product?.photoPath && (
+          <img
+            src={buildUploadUrl(product.photoPath)}
+            alt="current"
+            className="mt-2 w-48 h-48 object-cover rounded-lg"
+          />
+        )}
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full"
+        loading={createMutation.isPending || updateMutation.isPending}
+      >
+        {isEdit ? "Обновить товар" : "Создать товар"}
+      </Button>
     </form>
   );
 };
