@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createProductSchema } from "../../products/dto";
+import { api, buildUploadUrl } from "../../shared/lib/apiClient";
 import type { z } from "zod";
 import {
   TextInput,
@@ -16,7 +17,7 @@ import {
   useCreateProduct,
   useUpdateProduct,
 } from "../../entities/product/hooks";
-import type { Product } from "../../entities/product/types";
+import type { Product } from "../../shared/api/types";
 
 type ProductFormProps = {
   product?: Product;
@@ -36,7 +37,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   type FormInput = z.input<typeof createProductSchema>;
   type FormOutput = z.output<typeof createProductSchema>;
 
-  const { control, handleSubmit, reset } = useForm<FormInput, any, FormOutput>({
+  const { control, handleSubmit, reset } = useForm<
+    FormInput,
+    unknown,
+    FormOutput
+  >({
     resolver: zodResolver(createProductSchema),
     defaultValues: (product || {}) as Partial<FormInput>,
   });
@@ -57,13 +62,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       if (file) {
         const fd = new FormData();
         fd.append("file", file);
-        await fetch(
-          `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/products/${result.id}/photo`,
-          {
-            method: "POST",
-            body: fd,
-          }
-        );
+        await api.post(`/products/${result.id}/photo`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
       onSuccess?.(result);
@@ -157,7 +158,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       )}
       {product?.photoPath && !file && (
         <Image
-          src={`${import.meta.env.VITE_API_URL || "http://localhost:3001"}${product.photoPath}`}
+          src={buildUploadUrl(product.photoPath)}
           alt="current"
           width={200}
           height={200}

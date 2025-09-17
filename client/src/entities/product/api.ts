@@ -1,12 +1,13 @@
 import { api } from "../../shared/lib/apiClient";
-import type { Product, ProductListParams } from "./types";
+import type {
+  Product,
+  ListResponse,
+  ProductListParams,
+} from "../../shared/api/types";
 
 export const productsApi = {
   list: (params: ProductListParams) =>
-    api.get<{ items: Product[]; total: number; page: number; limit: number }>(
-      "/products",
-      { params }
-    ),
+    api.get<ListResponse<Product>>("/products", { params }),
   get: (id: string) => api.get<Product>(`/products/${id}`),
   create: (data: Omit<Product, "id">) => api.post<Product>("/products", data),
   update: (id: string, data: Partial<Omit<Product, "id">>) =>

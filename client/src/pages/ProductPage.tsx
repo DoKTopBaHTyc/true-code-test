@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useProduct } from "../entities/product/hooks";
+import { buildUploadUrl } from "../shared/lib/apiClient";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,7 +17,7 @@ export default function ProductPage() {
       <p>Цена: {product.price}₽</p>
       {product.photoPath && (
         <img
-          src={`${import.meta.env.VITE_API_URL || "http://localhost:3001"}${product.photoPath}`}
+          src={buildUploadUrl(product.photoPath)}
           alt={product.title}
           width="200"
         />

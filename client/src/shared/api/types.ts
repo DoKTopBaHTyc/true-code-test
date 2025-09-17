@@ -8,6 +8,13 @@ export type Product = {
   photoPath?: string | null;
 };
 
+export type ListResponse<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 export type ProductListParams = {
   page?: number;
   limit?: number;

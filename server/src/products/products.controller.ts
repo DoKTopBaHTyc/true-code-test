@@ -14,11 +14,14 @@ import { ProductsService } from "./products.service";
 import { createProductSchema } from "./dto/create-product.schema";
 import { updateProductSchema } from "./dto/update-product.schema";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
+import { listProductsSchema } from "./dto/list-products.schema";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
-import { v4 as uuidv4 } from "uuid";
-import { extname, join } from "path";
 import * as fs from "fs";
+import {
+  getImageMulterOptions,
+  toPublicUploadPath,
+  toAbsoluteUploadPath,
+} from "../common/upload/upload.util";
 
 @Controller("products")
 export class ProductsController {
@@ -30,7 +33,7 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query() query: any) {
+  findAll(@Query(new ZodValidationPipe(listProductsSchema)) query: any) {
     return this.service.findAll(query);
   }
 
@@ -53,23 +56,12 @@ export class ProductsController {
   }
 
   @Post(":id/photo")
-  @UseInterceptors(
-    FileInterceptor("file", {
-      storage: diskStorage({
-        destination: (req, file, cb) => cb(null, "./uploads"),
-        filename: (req, file, cb) => {
-          const name = uuidv4() + extname(file.originalname);
-          cb(null, name);
-        },
-      }),
-      limits: { fileSize: 5 * 1024 * 1024 },
-    })
-  )
+  @UseInterceptors(FileInterceptor("file", getImageMulterOptions()))
   async uploadPhoto(
     @Param("id") id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
-    const path = file ? `/uploads/${file.filename}` : null;
+    const path = file ? toPublicUploadPath(file.filename) : null;
     return this.service.update(id, { photoPath: path } as any);
   }
 
@@ -77,10 +69,10 @@ export class ProductsController {
   async deletePhoto(@Param("id") id: string) {
     const p = await this.service.findOne(id);
     if (p.photoPath) {
-      const pth = join(process.cwd(), p.photoPath.replace(/^\//, ""));
+      const abs = toAbsoluteUploadPath(p.photoPath);
       try {
-        fs.unlinkSync(pth);
-      } catch (e) {}
+        fs.unlinkSync(abs);
+      } catch {}
       return this.service.update(id, { photoPath: null } as any);
     }
     return { ok: true };

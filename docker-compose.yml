@@ -19,8 +19,13 @@ services:
       - db
     ports:
       - "3001:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     volumes:
-      - ./server/uploads:/usr/src/app/uploads
+      - uploads-data:/usr/src/app/uploads
       - ./server/src:/usr/src/app/src
 
   client:
@@ -29,6 +34,12 @@ services:
       - "3000:80"
     depends_on:
       - server
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 volumes:
   db-data:
+  uploads-data:
