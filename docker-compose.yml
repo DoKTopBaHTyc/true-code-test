@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   db:
     image: postgres:15
@@ -9,7 +9,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - '5432:5432'
+      - "5432:5432"
 
   server:
     build: ./server
@@ -18,7 +18,7 @@ services:
     depends_on:
       - db
     ports:
-      - '3001:3001'
+      - "3001:3001"
     volumes:
       - ./server/uploads:/usr/src/app/uploads
       - ./server/src:/usr/src/app/src
@@ -26,7 +26,7 @@ services:
   client:
     build: ./client
     ports:
-      - '3000:80'
+      - "3000:80"
     depends_on:
       - server
 
