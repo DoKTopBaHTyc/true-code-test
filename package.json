@@ -9,6 +9,7 @@
     "docker:up": "docker-compose up --build"
   },
   "devDependencies": {
+    "@types/uuid": "^10.0.0",
     "concurrently": "^8.0.0"
   }
 }
