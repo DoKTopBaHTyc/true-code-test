@@ -32,6 +32,36 @@ docker compose up -d
 - API: http://localhost:3001/api
 - Health: http://localhost:3001/api/health
 
+### Управление контейнерами
+
+```bash
+# статус контейнеров
+docker compose ps
+
+# логи (последние / стрим)
+docker compose logs server | tail -n 100
+docker compose logs -f server
+
+# перезапуск/остановка/запуск
+docker compose restart
+docker compose stop
+docker compose start
+
+# остановить и удалить контейнеры
+docker compose down
+
+# пересобрать и поднять
+docker compose up -d --build
+
+# полная пересборка без кэша
+docker compose build --no-cache && docker compose up -d
+
+# очистка с удалением volumes (в т.ч. uploads — осторожно!)
+docker compose down -v
+# прицельно удалить volume с загрузками (если нужно полностью очистить файлы)
+docker volume rm uploads-data
+```
+
 Файлы загрузок:
 
 - Путь в контейнере: `/app/uploads`
